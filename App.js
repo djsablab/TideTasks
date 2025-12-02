@@ -13,7 +13,6 @@ import { auth } from "./firebase";
 
 // Import screens
 import HomeScreen from "./screens/HomeScreen";
-import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
@@ -22,7 +21,9 @@ import RegisterScreen from "./screens/RegisterScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { StatusBar } from "react-native";
+import MTControlScreen from "./screens/MTControlScreen";
 
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 // Define the Tab navigator
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -39,8 +40,8 @@ function MainStack({ isDarkMode, toggleTheme }) {
       <Tab.Screen name="Home">
         {(props) => <HomeScreen {...props} isDarkMode={isDarkMode} />}
       </Tab.Screen>
-      <Tab.Screen name="Search">
-        {(props) => <SearchScreen {...props} isDarkMode={isDarkMode} />}
+      <Tab.Screen name="AddTask" text="A">
+        {(props) => <MTControlScreen {...props} isDarkMode={isDarkMode} />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
         {(props) => (
@@ -92,13 +93,13 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
 
         // 🔥 Animation value
         const scaleAnim = React.useRef(
-          new Animated.Value(isFocused ? 1.2 : 1)
+          new Animated.Value(isFocused ? 1.1 : 1)
         ).current;
 
         // Animate on focus
         React.useEffect(() => {
           Animated.spring(scaleAnim, {
-            toValue: isFocused ? 1.3 : 1,
+            toValue: isFocused ? 1.2 : 1,
             useNativeDriver: true,
             friction: 6,
           }).start();
@@ -107,8 +108,8 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
         let iconName;
         if (route.name === "Home")
           iconName = isFocused ? "home" : "home-outline";
-        if (route.name === "Search")
-          iconName = isFocused ? "search" : "search-outline";
+        if (route.name === "AddTask")
+          iconName = isFocused ? "add" : "add-outline";
         if (route.name === "Profile")
           iconName = isFocused ? "person" : "person-outline";
 
@@ -139,6 +140,24 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
                     : "#3f4d58"
                 }
               />
+              {/* Add text under the "AddTask" tab */}
+              {route.name === "AddTask" && true && (
+                <Text
+                  style={{
+                    fontSize: 9,
+                    color: isFocused
+                      ? isDarkMode
+                        ? "#81a1c1"
+                        : "#5f9dd2"
+                      : isDarkMode
+                      ? "#d8dee9"
+                      : "#3f4d58",
+                    marginTop: 0, // Space between icon and text
+                  }}
+                >
+                  Add Task
+                </Text>
+              )}
             </Animated.View>
           </TouchableWithoutFeedback>
         );
@@ -199,17 +218,21 @@ export default function App() {
   const toggleTheme = () => setIsDarkMode((prevMode) => !prevMode);
 
   return (
-    <NavigationContainer theme={isDarkMode ? customDarkTheme : customLightTheme}>
-      <StatusBar
-        barStyle={isDarkMode ? "light-content" : "dark-content"} // Adapt status bar style
-        backgroundColor={isDarkMode ? "#2e3440" : "#ffffff"} // Dark background for dark mode, light for light mode
-      />
-      {user === null ? (
-        <AuthStack /> // Show Auth Stack if user is not logged in
-      ) : (
-        <MainStack isDarkMode={isDarkMode} toggleTheme={toggleTheme} /> // Show Main Stack if user is logged in
-      )}
-    </NavigationContainer>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer
+        theme={isDarkMode ? customDarkTheme : customLightTheme}
+      >
+        <StatusBar
+          barStyle={isDarkMode ? "light-content" : "dark-content"} // Adapt status bar style
+          backgroundColor={isDarkMode ? "#2e3440" : "#ffffff"} // Dark background for dark mode, light for light mode
+        />
+        {user === null ? (
+          <AuthStack /> // Show Auth Stack if user is not logged in
+        ) : (
+          <MainStack isDarkMode={isDarkMode} toggleTheme={toggleTheme} /> // Show Main Stack if user is logged in
+        )}
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
