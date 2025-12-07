@@ -1,11 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Animated,
-  View,
-  TouchableWithoutFeedback,
-  Text,
-  StyleSheet,
-} from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Animated, View, Text, StyleSheet, StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -16,31 +10,113 @@ import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
+import MTControlScreen from "./screens/MTControlScreen";
 
 // Import Ionicons for tab icons
 import { Ionicons } from "@expo/vector-icons";
 import { DefaultTheme, DarkTheme } from "@react-navigation/native";
-import { StatusBar } from "react-native";
-import MTControlScreen from "./screens/MTControlScreen";
-
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-// Define the Tab navigator
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// MainStack that contains the tab screens (Home, Search, Profile)
-function MainStack({ isDarkMode, toggleTheme }) {
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showNavBar, setShowNavBar] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  const customDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: "#16191dff",
+      card: "#3b4252",
+      text: "#eceff4",
+      border: "#434c5e",
+      notification: "#81a1c1",
+    },
+  };
+
+  const customLightTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: "#f8f8f8",
+      card: "#d8dee9",
+      text: "#2e3440",
+      border: "#e5e9f0",
+      notification: "#88c0d0",
+    },
+  };
+
+  const toggleTheme = () => setIsDarkMode((prevMode) => !prevMode);
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer
+        theme={isDarkMode ? customDarkTheme : customLightTheme}
+      >
+        <StatusBar
+          barStyle={isDarkMode ? "light-content" : "dark-content"}
+          backgroundColor={isDarkMode ? "#2e3440" : "#ffffff"}
+        />
+        {user === null ? (
+          <AuthStack />
+        ) : (
+          <MainStack
+            isDarkMode={isDarkMode}
+            toggleTheme={toggleTheme}
+            setShowNavBar={setShowNavBar}
+            showNavBar={showNavBar}
+          />
+        )}
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  );
+}
+
+function MainStack({ isDarkMode, toggleTheme, setShowNavBar, showNavBar }) {
   return (
     <Tab.Navigator
-      tabBar={(props) => <AnimatedTabBar {...props} isDarkMode={isDarkMode} />} // Pass isDarkMode to tab bar
+      tabBar={(props) => (
+        <AnimatedTabBar
+          {...props}
+          isDarkMode={isDarkMode}
+          showNavBar={showNavBar}
+        />
+      )}
       screenOptions={{
         headerShown: false,
       }}
     >
       <Tab.Screen name="Home">
-        {(props) => <HomeScreen {...props} isDarkMode={isDarkMode} />}
+        {(props) => (
+          <HomeScreen
+            {...props}
+            isDarkMode={isDarkMode}
+            setShowNavBar={setShowNavBar}
+          />
+        )}
       </Tab.Screen>
-      <Tab.Screen name="AddTask" text="A">
+      <Tab.Screen name="AddTask">
         {(props) => <MTControlScreen {...props} isDarkMode={isDarkMode} />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
@@ -56,7 +132,6 @@ function MainStack({ isDarkMode, toggleTheme }) {
   );
 }
 
-// AuthStack for login and registration screens
 function AuthStack() {
   return (
     <Stack.Navigator>
@@ -64,40 +139,60 @@ function AuthStack() {
         name="Login"
         component={LoginScreen}
         options={{
-          headerShown: false, // Hide header for LoginScreen
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
         options={{
-          headerShown: false, // Hide header for RegisterScreen
+          headerShown: false,
         }}
       />
     </Stack.Navigator>
   );
 }
 
-// 🔥 Custom animated tab component
-function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
+function AnimatedTabBar({ state, descriptors, navigation, isDarkMode, showNavBar }) {
+  // Single Animated Value for opacity and translateY
+  const fadeAnim = useRef(new Animated.Value(1)).current; // for opacity
+  const translateYAnim = useRef(new Animated.Value(0)).current; // for slide in/out
+
+  // Animate opacity and translateY when showNavBar changes
+  useEffect(() => {
+    // Animate opacity (fade in/out)
+    Animated.timing(fadeAnim, {
+      toValue: showNavBar ? 1 : 0, // Fade in or out based on showNavBar
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+
+    // Animate translateY (slide up/down)
+    Animated.timing(translateYAnim, {
+      toValue: showNavBar ? 0 : 200, // Slide in or out based on showNavBar
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [showNavBar]);
+
   return (
-    <View
+    <Animated.View
       style={[
         styles.tabContainer,
-        { backgroundColor: isDarkMode ? "#3b4252" : "#ffffff" }, // Dynamically change background color
+        {
+          backgroundColor: isDarkMode ? "#3b4252" : "#ffffff",
+          opacity: fadeAnim, // Use fadeAnim for opacity
+          transform: [{ translateY: translateYAnim }], // Use translateYAnim for sliding
+        },
       ]}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
 
-        // 🔥 Animation value
-        const scaleAnim = React.useRef(
-          new Animated.Value(isFocused ? 1.1 : 1)
-        ).current;
+        const scaleAnim = new Animated.Value(isFocused ? 1.1 : 1);
 
-        // Animate on focus
-        React.useEffect(() => {
+        useEffect(() => {
           Animated.spring(scaleAnim, {
             toValue: isFocused ? 1.2 : 1,
             useNativeDriver: true,
@@ -106,12 +201,9 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
         }, [isFocused]);
 
         let iconName;
-        if (route.name === "Home")
-          iconName = isFocused ? "home" : "home-outline";
-        if (route.name === "AddTask")
-          iconName = isFocused ? "add" : "add-outline";
-        if (route.name === "Profile")
-          iconName = isFocused ? "person" : "person-outline";
+        if (route.name === "Home") iconName = isFocused ? "home" : "home-outline";
+        if (route.name === "AddTask") iconName = isFocused ? "add" : "add-outline";
+        if (route.name === "Profile") iconName = isFocused ? "person" : "person-outline";
 
         const onPress = () => {
           if (!isFocused) navigation.navigate(route.name);
@@ -122,9 +214,7 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
             <Animated.View
               style={[
                 styles.iconWrapper,
-                {
-                  transform: [{ scale: scaleAnim }],
-                },
+                { transform: [{ scale: scaleAnim }] },
               ]}
             >
               <Ionicons
@@ -140,19 +230,11 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
                     : "#3f4d58"
                 }
               />
-              {/* Add text under the "AddTask" tab */}
-              {route.name === "AddTask" && true && (
+              {route.name === "AddTask" && (
                 <Text
                   style={{
                     fontSize: 9,
-                    color: isFocused
-                      ? isDarkMode
-                        ? "#81a1c1"
-                        : "#5f9dd2"
-                      : isDarkMode
-                      ? "#d8dee9"
-                      : "#3f4d58",
-                    marginTop: 0, // Space between icon and text
+                    color: isFocused ? "#5f9dd2" : "#3f4d58",
                   }}
                 >
                   Add Task
@@ -162,81 +244,10 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode }) {
           </TouchableWithoutFeedback>
         );
       })}
-    </View>
+    </Animated.View>
   );
 }
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [loading, setLoading] = useState(true); // Track loading state
-
-  // Check user authentication state
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user); // Set user if authenticated
-      setLoading(false); // Finished loading, now show the app
-    });
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) {
-    return (
-      // Show a loading screen while authentication is in progress
-      <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
-  // Theme configurations
-  const customDarkTheme = {
-    ...DarkTheme,
-    colors: {
-      ...DarkTheme.colors,
-      background: "#16191dff", // Soft dark gray
-      card: "#3b4252", // Muted gray for the tab bar
-      text: "#eceff4", // Light gray text for contrast
-      border: "#434c5e", // Slightly darker gray for borders
-      notification: "#81a1c1", // Soft blue for notifications (optional)
-    },
-  };
-
-  const customLightTheme = {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      background: "#f8f8f8", // Softer, off-white background
-      card: "#d8dee9", // Light gray for tab bar background
-      text: "#2e3440", // Dark gray text
-      border: "#e5e9f0", // Subtle border color
-      notification: "#88c0d0", // Soft blue for notifications (optional)
-    },
-  };
-
-  // Toggle dark mode
-  const toggleTheme = () => setIsDarkMode((prevMode) => !prevMode);
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer
-        theme={isDarkMode ? customDarkTheme : customLightTheme}
-      >
-        <StatusBar
-          barStyle={isDarkMode ? "light-content" : "dark-content"} // Adapt status bar style
-          backgroundColor={isDarkMode ? "#2e3440" : "#ffffff"} // Dark background for dark mode, light for light mode
-        />
-        {user === null ? (
-          <AuthStack /> // Show Auth Stack if user is not logged in
-        ) : (
-          <MainStack isDarkMode={isDarkMode} toggleTheme={toggleTheme} /> // Show Main Stack if user is logged in
-        )}
-      </NavigationContainer>
-    </GestureHandlerRootView>
-  );
-}
-
-// 🎨 Styling
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
@@ -253,7 +264,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
-
   iconWrapper: {
     justifyContent: "center",
     alignItems: "center",
@@ -261,7 +271,6 @@ const styles = StyleSheet.create({
     width: 55,
     borderRadius: 30,
   },
-
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
