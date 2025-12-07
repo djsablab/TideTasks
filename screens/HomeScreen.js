@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -26,7 +26,7 @@ import {
   doc,
 } from "firebase/firestore";
 
-export default function HomeScreen({ isDarkMode }) {
+export default function HomeScreen({ isDarkMode, setShowNavBar }) {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,28 @@ export default function HomeScreen({ isDarkMode }) {
   const [completed, setCompleted] = useState(false);
   const uid = auth.currentUser?.uid;
 
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  );
+
+  // Track scroll position to hide/show the navigation bar
+  useEffect(() => {
+    const listenerId = scrollY.addListener(({ value }) => {
+      if (value > 1) {
+        setShowNavBar(false); // Hide navbar when scrolled down
+      } else {
+        setShowNavBar(true); // Show navbar when scrolled up
+      }
+    });
+
+    return () => {
+      scrollY.removeListener(listenerId);
+    };
+  }, [scrollY, setShowNavBar]);
+
   useEffect(() => {
     if (selectedDate && filteredTasks.length === 0) {
       Animated.timing(fadeAnim, {
@@ -54,7 +76,7 @@ export default function HomeScreen({ isDarkMode }) {
     }
   }, [selectedDate, filteredTasks]);
 
-  /** Load tasks from Firestore */
+  // Load tasks from Firestore
   useEffect(() => {
     if (!uid) return;
     const ref = collection(db, "users", uid, "tasks");
@@ -70,7 +92,7 @@ export default function HomeScreen({ isDarkMode }) {
     return unsub;
   }, [uid]);
 
-  /** Filter tasks based on selected date */
+  // Filter tasks based on selected date
   useEffect(() => {
     let list = [...tasks];
     if (selectedDate) {
@@ -85,7 +107,6 @@ export default function HomeScreen({ isDarkMode }) {
     setFilteredTasks(list);
   }, [selectedDate, tasks]);
 
-  /** Add or update task */
   const saveTask = async () => {
     if (!taskName.trim()) return alert("Task name required.");
 
@@ -127,7 +148,6 @@ export default function HomeScreen({ isDarkMode }) {
     await deleteDoc(doc(db, "users", uid, "tasks", id));
   };
 
-  /** Toggle completed state from task list with animation */
   const toggleCompleted = async (task) => {
     const newValue = !task.completed;
     await updateDoc(doc(db, "users", uid, "tasks", task.id), {
@@ -141,7 +161,6 @@ export default function HomeScreen({ isDarkMode }) {
     }).start();
   };
 
-  /** Calendar dots */
   const markedDates = {};
   tasks.forEach((t) => {
     const start = new Date(t.startDate);
@@ -165,7 +184,6 @@ export default function HomeScreen({ isDarkMode }) {
     };
   }
 
-  /** Render a swipeable row with animated checkbox */
   const renderTask = ({ item }) => {
     const renderRightActions = () => (
       <TouchableOpacity
@@ -182,7 +200,8 @@ export default function HomeScreen({ isDarkMode }) {
     });
 
     return (
-      <Swipeable renderRightActions={renderRightActions}>
+      <Swipeable renderRightActions={() => renderRightActions(item.id)}>
+      <Animated.ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
         <View
           style={[
             styles.taskCard,
@@ -235,6 +254,7 @@ export default function HomeScreen({ isDarkMode }) {
             </Text>
           </TouchableOpacity>
         </View>
+      </Animated.ScrollView>
       </Swipeable>
     );
   };
@@ -294,6 +314,8 @@ export default function HomeScreen({ isDarkMode }) {
           keyExtractor={(item) => item.id}
           renderItem={renderTask}
           contentContainerStyle={{ paddingBottom: 100, width: "100%" }}
+          onScroll={handleScroll} // Add scroll event here
+          scrollEventThrottle={16} // Throttle the scroll events for better performance
         />
       )}
 
@@ -514,7 +536,6 @@ const styles = StyleSheet.create({
   },
   dateBtn: {
     paddingVertical: 10,
-
   },
   saveBtn: {
     backgroundColor: "#4A90E2",

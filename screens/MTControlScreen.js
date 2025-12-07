@@ -60,6 +60,7 @@ export default function AddTaskScreen({ isDarkMode }) {
         ]}
         value={taskName}
         onChangeText={setTaskName}
+        multiline
       />
 
       {/* Start Date */}
