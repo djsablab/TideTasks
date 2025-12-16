@@ -1,3 +1,4 @@
+  /* -------------------- Imports -------------------- */
 import React, { useState, useEffect, useRef } from "react";
 import { Animated, View, Text, StyleSheet, StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -5,14 +6,14 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { auth } from "./firebase";
 
-// Import screens
+  /* -------------------- Import Screens -------------------- */
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import MTControlScreen from "./screens/MTControlScreen";
 
-// Import Ionicons for tab icons
+  /* -------------------- Import Components -------------------- */
 import { Ionicons } from "@expo/vector-icons";
 import { DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -21,12 +22,14 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+  /* -------------------- App -------------------- */
 export default function App() {
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showNavBar, setShowNavBar] = useState(true);
 
+  /* -------------------- Authentication -------------------- */
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -35,6 +38,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  /* -------------------- Render Loading -------------------- */
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -43,6 +47,7 @@ export default function App() {
     );
   }
 
+  /* -------------------- Themes -------------------- */
   const customDarkTheme = {
     ...DarkTheme,
     colors: {
@@ -67,8 +72,10 @@ export default function App() {
     },
   };
 
+  /* -------------------- Toggle Theme -------------------- */
   const toggleTheme = () => setIsDarkMode((prevMode) => !prevMode);
 
+  /* -------------------- Main UI -------------------- */
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer
@@ -93,6 +100,7 @@ export default function App() {
   );
 }
 
+/* -------------------- Main UI's Stack -------------------- */
 function MainStack({ isDarkMode, toggleTheme, setShowNavBar, showNavBar }) {
   return (
     <Tab.Navigator
@@ -132,6 +140,7 @@ function MainStack({ isDarkMode, toggleTheme, setShowNavBar, showNavBar }) {
   );
 }
 
+/* -------------------- Auth UI's Stack -------------------- */
 function AuthStack() {
   return (
     <Stack.Navigator>
@@ -153,7 +162,14 @@ function AuthStack() {
   );
 }
 
-function AnimatedTabBar({ state, descriptors, navigation, isDarkMode, showNavBar }) {
+/* -------------------- Animated Tab Bar -------------------- */
+function AnimatedTabBar({
+  state,
+  descriptors,
+  navigation,
+  isDarkMode,
+  showNavBar,
+}) {
   // Single Animated Value for opacity and translateY
   const fadeAnim = useRef(new Animated.Value(1)).current; // for opacity
   const translateYAnim = useRef(new Animated.Value(0)).current; // for slide in/out
@@ -175,6 +191,7 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode, showNavBar
     }).start();
   }, [showNavBar]);
 
+  /* -------------------- Render Tab Bar -------------------- */
   return (
     <Animated.View
       style={[
@@ -201,9 +218,12 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode, showNavBar
         }, [isFocused]);
 
         let iconName;
-        if (route.name === "Home") iconName = isFocused ? "home" : "home-outline";
-        if (route.name === "AddTask") iconName = isFocused ? "add" : "add-outline";
-        if (route.name === "Profile") iconName = isFocused ? "person" : "person-outline";
+        if (route.name === "Home")
+          iconName = isFocused ? "home" : "home-outline";
+        if (route.name === "AddTask")
+          iconName = isFocused ? "add" : "add-outline";
+        if (route.name === "Profile")
+          iconName = isFocused ? "person" : "person-outline";
 
         const onPress = () => {
           if (!isFocused) navigation.navigate(route.name);
@@ -234,7 +254,13 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode, showNavBar
                 <Text
                   style={{
                     fontSize: 9,
-                    color: isFocused ? "#5f9dd2" : "#3f4d58",
+                    color: isFocused
+                      ? isDarkMode
+                        ? "#81a1c1"
+                        : "#5f9dd2"
+                      : isDarkMode
+                      ? "#d8dee9"
+                      : "#3f4d58",
                   }}
                 >
                   Add Task
@@ -248,6 +274,7 @@ function AnimatedTabBar({ state, descriptors, navigation, isDarkMode, showNavBar
   );
 }
 
+/* -------------------- Styles -------------------- */
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",

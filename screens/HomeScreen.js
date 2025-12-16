@@ -1,3 +1,4 @@
+/* -------------------- Imports -------------------- */
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -26,6 +27,7 @@ import {
   doc,
 } from "firebase/firestore";
 
+/* -------------------- HomeScreen -------------------- */
 export default function HomeScreen({ isDarkMode, setShowNavBar }) {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -43,13 +45,12 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
   const uid = auth.currentUser?.uid;
 
   const scrollY = useRef(new Animated.Value(0)).current;
-
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
     { useNativeDriver: false }
   );
 
-  // Track scroll position to hide/show the navigation bar
+  /* -------------------- Track scroll position to hide/show the navigation bar -------------------- */
   useEffect(() => {
     const listenerId = scrollY.addListener(({ value }) => {
       if (value > 1) {
@@ -76,7 +77,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     }
   }, [selectedDate, filteredTasks]);
 
-  // Load tasks from Firestore
+  /* -------------------- Load tasks from Firestore -------------------- */
   useEffect(() => {
     if (!uid) return;
     const ref = collection(db, "users", uid, "tasks");
@@ -92,7 +93,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     return unsub;
   }, [uid]);
 
-  // Filter tasks based on selected date
+  /* -------------------- Filter tasks based on selected date -------------------- */
   useEffect(() => {
     let list = [...tasks];
     if (selectedDate) {
@@ -107,6 +108,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     setFilteredTasks(list);
   }, [selectedDate, tasks]);
 
+  /* -------------------- Save task to Firestore -------------------- */
   const saveTask = async () => {
     if (!taskName.trim()) return alert("Task name required.");
 
@@ -144,10 +146,11 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     setModalVisible(true);
   };
 
+  /* -------------------- Delete task -------------------- */
   const deleteTask = async (id) => {
     await deleteDoc(doc(db, "users", uid, "tasks", id));
   };
-
+  /* -------------------- Toggle task completion -------------------- */
   const toggleCompleted = async (task) => {
     const newValue = !task.completed;
     await updateDoc(doc(db, "users", uid, "tasks", task.id), {
@@ -161,6 +164,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     }).start();
   };
 
+  /* -------------------- Prepare marked dates for Calendar -------------------- */
   const markedDates = {};
   tasks.forEach((t) => {
     const start = new Date(t.startDate);
@@ -176,6 +180,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     }
   });
 
+  /* -------------------- Prepare selected date for Calendar -------------------- */
   if (selectedDate) {
     markedDates[selectedDate] = {
       ...markedDates[selectedDate],
@@ -184,6 +189,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
     };
   }
 
+  /* -------------------- Render each task item -------------------- */
   const renderTask = ({ item }) => {
     const renderRightActions = () => (
       <TouchableOpacity
@@ -199,66 +205,73 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
       outputRange: ["transparent", "#4A90E2"],
     });
 
+    /* -------------------- Calendar UI -------------------- */
     return (
       <Swipeable renderRightActions={() => renderRightActions(item.id)}>
-      <Animated.ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
-        <View
-          style={[
-            styles.taskCard,
-            {
-              backgroundColor: isDarkMode ? "#2b2e33" : "#fff",
-              shadowOpacity: isDarkMode ? 0 : 0.15,
-              shadowRadius: isDarkMode ? 0 : 5,
-              shadowOffset: { width: 0, height: 3 },
-              elevation: isDarkMode ? 0 : 3,
-            },
-          ]}
-        >
-          <TouchableOpacity
-            style={[styles.checkbox, { borderColor: "#4A90E2" }]}
-            onPress={() => toggleCompleted(item)}
+        <Animated.ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
+          <View
+            style={[
+              styles.taskCard,
+              {
+                backgroundColor: isDarkMode ? "#2b2e33" : "#fff",
+                shadowOpacity: isDarkMode ? 0 : 0.15,
+                shadowRadius: isDarkMode ? 0 : 5,
+                shadowOffset: { width: 0, height: 3 },
+                elevation: isDarkMode ? 0 : 3,
+              },
+            ]}
           >
-            <Animated.View
-              style={[styles.checkboxFill, { backgroundColor: checkboxColor }]}
+            <TouchableOpacity
+              style={[styles.checkbox, { borderColor: "#4A90E2" }]}
+              onPress={() => toggleCompleted(item)}
             >
-              {item.completed && (
-                <Ionicons name="checkmark" size={20} color="#fff" />
-              )}
-            </Animated.View>
-          </TouchableOpacity>
+              <Animated.View
+                style={[
+                  styles.checkboxFill,
+                  { backgroundColor: checkboxColor },
+                ]}
+              >
+                {item.completed && (
+                  <Ionicons name="checkmark" size={20} color="#fff" />
+                )}
+              </Animated.View>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={{ flex: 1, marginLeft: 12 }}
-            onPress={() => openEditModal(item)}
-          >
-            <Text
-              style={[
-                styles.taskName,
-                {
-                  color: isDarkMode ? "#fff" : "#111",
-                  textDecorationLine: item.completed ? "line-through" : "none",
-                  opacity: item.completed ? 0.6 : 1,
-                },
-              ]}
+            <TouchableOpacity
+              style={{ flex: 1, marginLeft: 12 }}
+              onPress={() => openEditModal(item)}
             >
-              {item.name}
-            </Text>
-            <Text
-              style={[
-                styles.taskDates,
-                { color: isDarkMode ? "#ddd" : "#555" },
-              ]}
-            >
-              {new Date(item.startDate).toDateString()} →{" "}
-              {new Date(item.endDate).toDateString()}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.ScrollView>
+              <Text
+                style={[
+                  styles.taskName,
+                  {
+                    color: isDarkMode ? "#fff" : "#111",
+                    textDecorationLine: item.completed
+                      ? "line-through"
+                      : "none",
+                    opacity: item.completed ? 0.6 : 1,
+                  },
+                ]}
+              >
+                {item.name}
+              </Text>
+              <Text
+                style={[
+                  styles.taskDates,
+                  { color: isDarkMode ? "#ddd" : "#555" },
+                ]}
+              >
+                {new Date(item.startDate).toDateString()} →{" "}
+                {new Date(item.endDate).toDateString()}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.ScrollView>
       </Swipeable>
     );
   };
 
+  /* -------------------- Main UI -------------------- */
   return (
     <SafeAreaView
       style={[
@@ -468,6 +481,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
   );
 }
 
+/* -------------------- Styles -------------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

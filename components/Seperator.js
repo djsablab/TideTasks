@@ -1,5 +1,8 @@
+/* -------------------- Imports -------------------- */
 import React from "react";
 import { View, StyleSheet } from "react-native";
+
+/* -------------------- Seperator Component -------------------- */
 export default function Seperator(style) {
   return (
     <View

@@ -1,11 +1,10 @@
-// ProfileScreen.js
+/* -------------------- Imports -------------------- */
 import { useState, useEffect } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   TextInput,
   ActivityIndicator,
   Modal,
@@ -28,9 +27,10 @@ import {
 } from "firebase/firestore"; // Firestore functions for fetching and updating user data
 import RoundedButton from "../components/RoundedButton";
 import Seperator from "../components/Seperator";
+import ToastManager, { Toast } from "toastify-react-native";
+import FirebaseErrorParser from "../components/FirebaseErrorParser";
 
-import App from "../App";
-
+/* -------------------- Profile Screen -------------------- */
 export default function ProfileScreen({ toggleTheme, isDarkMode }) {
   const [userData, setUserData] = useState({
     user: null,
@@ -56,7 +56,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
   });
 
   const uid = auth.currentUser?.uid;
-  // Fetch user data from Firebase Auth and Firestore
+  /* -------------------- Fetch user data from Firestore -------------------- */
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -79,7 +79,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
           ...prevState,
           error: error.message,
         }));
-        console.error("Error fetching user data: ", error);
+        Toast.error(error.message, "bottom");
       } finally {
         setUserData((prevState) => ({ ...prevState, isLoading: false }));
       }
@@ -87,6 +87,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
     fetchUserData();
   }, []);
 
+  /* -------------------- Fetch task statistics -------------------- */
   useEffect(() => {
     if (!uid) return;
     const ref = collection(db, "users", uid, "tasks");
@@ -111,25 +112,24 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
     return unsub;
   }, [uid]);
 
-  // Log out the user
-  // Log out the user
+  /* -------------------- Handle logout -------------------- */
   const handleLogout = async () => {
     // Reset to light mode on logout
-    toggleTheme(false); // Call the toggleTheme function with false to set the theme to light mode
+
     try {
       await signOut(auth); // Firebase sign out
-      Alert.alert("Logged out successfully!");
+      Toast.success("Logged out successfully!", "bottom");
     } catch (error) {
-      Alert.alert("Error", error.message); // Show any error message
+      Toast.error(error.message, "bottom");
     }
   };
 
-  // Handle username change and save to Firestore
+  /* -------------------- Handle save username -------------------- */
   const handleSaveUsername = async () => {
     const { newUsername, user } = userData;
 
     if (!newUsername) {
-      Alert.alert("Username cannot be empty.");
+      Toast.error("Username cannot be empty.", "bottom");
       return;
     }
 
@@ -147,13 +147,13 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
         usernameModalVisible: false, // Close the modal
       }));
 
-      Alert.alert("Username updated successfully!");
+      Toast.success("Username updated successfully!", "bottom");
     } catch (error) {
-      Alert.alert("Error", "Failed to update username.");
+      Toast.error("Failed to update username.", "bottom");
     }
   };
 
-  // Show or hide password change modal
+  /* -------------------- Toggle Password Change Modal -------------------- */
   const togglePasswordModal = () => {
     setUserData((prevState) => ({
       ...prevState,
@@ -167,7 +167,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
     }));
   };
 
-  // Handle password change logic
+  /* -------------------- Handle password change -------------------- */
   const handlePasswordChange = async () => {
     const { oldPassword, newPassword, confirmPassword, user } = userData;
 
@@ -208,7 +208,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
         passwordError: "",
         isPasswordModalVisible: false,
       }));
-      Alert.alert("Password changed successfully!");
+      Toast.success("Password updated successfully!", "bottom");
     } catch (error) {
       setUserData((prevState) => ({
         ...prevState,
@@ -217,7 +217,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
     }
   };
 
-  // Loading, Error or User data state rendering
+  /* -------------------- Destructure userData -------------------- */
   const {
     isLoading,
     error,
@@ -277,6 +277,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
     );
   }
 
+  /* -------------------- Main UI -------------------- */
   return (
     <View
       style={[
@@ -602,10 +603,12 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
           </View>
         </View>
       </Modal>
+      <ToastManager />
     </View>
   );
 }
 
+/* -------------------- Styles -------------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
