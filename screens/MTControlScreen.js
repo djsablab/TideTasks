@@ -1,3 +1,4 @@
+/* -------------------- Imports -------------------- */
 import React, { useState } from "react";
 import {
   View,
@@ -9,10 +10,11 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
-
 import { auth, db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import ToastManager, { Toast } from "toastify-react-native";
 
+/* -------------------- Main Task Control Screen -------------------- */
 export default function AddTaskScreen({ isDarkMode }) {
   const [taskName, setTaskName] = useState("");
   const [startDate, setStartDate] = useState(new Date());
@@ -22,10 +24,11 @@ export default function AddTaskScreen({ isDarkMode }) {
 
   const uid = auth.currentUser?.uid;
 
-  /** 🔥 Add Task to Firestore */
+  /* -------------------- Add task to Firestore -------------------- */
   const saveTask = async () => {
-    if (!taskName.trim()) return alert("Task name cannot be empty.");
-    if (!uid) return alert("User not authenticated.");
+    if (!taskName.trim())
+      return Toast.error("Task name cannot be empty.", "bottom");
+    if (!uid) return Toast.error("User not authenticated.", "bottom");
 
     await addDoc(collection(db, "users", uid, "tasks"), {
       name: taskName,
@@ -36,9 +39,10 @@ export default function AddTaskScreen({ isDarkMode }) {
     setTaskName("");
     setStartDate(new Date());
     setEndDate(new Date());
-    alert("Task added successfully!");
+    Toast.success("Task added successfully!", "bottom");
   };
 
+  /* -------------------- UI -------------------- */
   return (
     <SafeAreaView
       style={[
@@ -56,7 +60,10 @@ export default function AddTaskScreen({ isDarkMode }) {
         placeholderTextColor="#999"
         style={[
           styles.input,
-          { color: isDarkMode ? "#fff" : "#000", borderColor: isDarkMode ? "#444" : "#ddd" },
+          {
+            color: isDarkMode ? "#fff" : "#000",
+            borderColor: isDarkMode ? "#444" : "#ddd",
+          },
         ]}
         value={taskName}
         onChangeText={setTaskName}
@@ -68,8 +75,14 @@ export default function AddTaskScreen({ isDarkMode }) {
         onPress={() => setShowStartPicker(true)}
         style={styles.dateBtn}
       >
-        <Ionicons name="calendar" size={20} color={isDarkMode ? "#5e81ac" : "#1e88e5"} />
-        <Text style={[styles.dateText, { color: isDarkMode ? "#fff" : "#000" }]}>
+        <Ionicons
+          name="calendar"
+          size={20}
+          color={isDarkMode ? "#5e81ac" : "#1e88e5"}
+        />
+        <Text
+          style={[styles.dateText, { color: isDarkMode ? "#fff" : "#000" }]}
+        >
           Start: {startDate.toDateString()}
         </Text>
       </TouchableOpacity>
@@ -89,8 +102,14 @@ export default function AddTaskScreen({ isDarkMode }) {
         onPress={() => setShowEndPicker(true)}
         style={styles.dateBtn}
       >
-        <Ionicons name="calendar" size={20} color={isDarkMode ? "#5e81ac" : "#1e88e5"} />
-        <Text style={[styles.dateText, { color: isDarkMode ? "#fff" : "#000" }]}>
+        <Ionicons
+          name="calendar"
+          size={20}
+          color={isDarkMode ? "#5e81ac" : "#1e88e5"}
+        />
+        <Text
+          style={[styles.dateText, { color: isDarkMode ? "#fff" : "#000" }]}
+        >
           End: {endDate.toDateString()}
         </Text>
       </TouchableOpacity>
@@ -119,13 +138,37 @@ export default function AddTaskScreen({ isDarkMode }) {
   );
 }
 
-/** Styles */
+/* -------------------- Styles -------------------- */
 const styles = StyleSheet.create({
   container: { paddingHorizontal: 10, paddingTop: 20, height: "85%" },
-  title: { fontSize: 28, fontWeight: "700", marginBottom: 20, textAlign: "center", marginTop: 20 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 12, fontSize: 16, marginBottom: 20, flex: 1, textAlignVertical: "top" },
-  dateBtn: { flexDirection: "row", alignItems: "center", paddingVertical: 10, marginBottom: 2 },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 20,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+    flex: 1,
+    textAlignVertical: "top",
+  },
+  dateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    marginBottom: 2,
+  },
   dateText: { marginLeft: 8, fontSize: 16 },
   saveBtn: { paddingVertical: 14, borderRadius: 10, marginTop: 30 },
-  saveText: { textAlign: "center", fontSize: 18, fontWeight: "600", color: "#fff" },
+  saveText: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#fff",
+  },
 });

@@ -1,4 +1,7 @@
+/* -------------------- Imports -------------------- */
 import { TouchableOpacity, Text } from 'react-native';
+
+/* -------------------- Rounded Button Component -------------------- */
 export default function RoundedButton({ title, onPress, style, textStyle }) {
   return (
     <TouchableOpacity
