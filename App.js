@@ -1,19 +1,22 @@
-  /* -------------------- Imports -------------------- */
+/* -------------------- Imports -------------------- */
 import React, { useState, useEffect, useRef } from "react";
 import { Animated, View, Text, StyleSheet, StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { auth } from "./firebase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-  /* -------------------- Import Screens -------------------- */
+/* -------------------- Import Screens -------------------- */
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import MTControlScreen from "./screens/MTControlScreen";
+import OnboardingScreen from "./screens/onboarding/OnboardingScreen";
+import { ONBOARDING_VERSION } from "./constants/onboarding";
 
-  /* -------------------- Import Components -------------------- */
+/* -------------------- Import Components -------------------- */
 import { Ionicons } from "@expo/vector-icons";
 import { DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -22,12 +25,24 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-  /* -------------------- App -------------------- */
+/* -------------------- App -------------------- */
 export default function App() {
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showNavBar, setShowNavBar] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [ready, setReady] = useState(false);
+  /* -------------------- Onboarding Check -------------------- */
+  useEffect(() => {
+    const init = async () => {
+      const version = await AsyncStorage.getItem("onboardingVersion");
+      setShowOnboarding(version !== ONBOARDING_VERSION);
+      setReady(true);
+      /* setShowOnboarding(true);     Handy for testing */
+    };
+    init();
+  }, []);
 
   /* -------------------- Authentication -------------------- */
   useEffect(() => {
@@ -45,6 +60,12 @@ export default function App() {
         <Text>Loading...</Text>
       </View>
     );
+  }
+
+  if (!ready) return null;
+
+  if (showOnboarding) {
+    return <OnboardingScreen onDone={() => setShowOnboarding(false)} />;
   }
 
   /* -------------------- Themes -------------------- */
@@ -185,7 +206,7 @@ function AnimatedTabBar({
 
     // Animate translateY (slide up/down)
     Animated.timing(translateYAnim, {
-      toValue: showNavBar ? 0 : 200, // Slide in or out based on showNavBar
+      toValue: showNavBar ? 0 : 20, // Slide in or out based on showNavBar
       duration: 250,
       useNativeDriver: true,
     }).start();
@@ -211,7 +232,7 @@ function AnimatedTabBar({
 
         useEffect(() => {
           Animated.spring(scaleAnim, {
-            toValue: isFocused ? 1.2 : 1,
+            toValue: isFocused ? 1.1 : 1,
             useNativeDriver: true,
             friction: 6,
           }).start();
@@ -279,7 +300,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
     position: "absolute",
-    bottom: 50,
+    bottom: 60,
     left: 20,
     right: 20,
     height: 60,

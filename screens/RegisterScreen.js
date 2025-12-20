@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -77,7 +76,6 @@ const RegisterScreen = ({ navigation }) => {
         createdAt: new Date(),
       });
       Toast.success("Registration successful! You can now log in.", "bottom");
-      navigation.goBack();
     } catch (error) {
       Toast.error(FirebaseErrorParser(error), "bottom");
     } finally {
@@ -93,7 +91,7 @@ const RegisterScreen = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.container}>
-        <Text style={styles.header}>Sign Up</Text>
+        <Text style={styles.header}>Sign Up to TideTasks</Text>
         <TextInput
           style={[styles.input, usernameError && styles.errorBorder]}
           placeholder="Username"
@@ -102,6 +100,7 @@ const RegisterScreen = ({ navigation }) => {
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="next"
+          placeholderTextColor="#999"
         />
         {usernameError && <Text style={styles.errorText}>{usernameError}</Text>}
         <TextInput
@@ -113,6 +112,7 @@ const RegisterScreen = ({ navigation }) => {
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="next"
+          placeholderTextColor="#999"
         />
         <View style={styles.passwordRow}>
           <TextInput
@@ -127,6 +127,7 @@ const RegisterScreen = ({ navigation }) => {
             secureTextEntry={!showPassword}
             autoCapitalize="none"
             returnKeyType="next"
+            placeholderTextColor="#999"
           />
           <TouchableOpacity
             activeOpacity={0.85}
@@ -150,6 +151,7 @@ const RegisterScreen = ({ navigation }) => {
           secureTextEntry={!showPassword}
           returnKeyType="done"
           onSubmitEditing={handleRegister}
+          placeholderTextColor="#999"
         />
         {confirmPasswordError && (
           <Text style={styles.errorText}>{confirmPasswordError}</Text>
@@ -159,7 +161,7 @@ const RegisterScreen = ({ navigation }) => {
           title={loading ? "Signing Up..." : "Sign Up"}
           onPress={handleRegister}
           disabled={!isFormValid}
-          style={{ marginTop: 10 ,backgroundColor: isFormValid ? "#5f9dd2" : "#a0c4e8"}}
+          style={{ marginTop: 10 ,backgroundColor: isFormValid ? "#1761a1ff" : "#a0c4e896"}}
         />
 
         <Text style={styles.link} onPress={() => navigation.goBack()}>
@@ -194,6 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     marginBottom: 6,
+    color: "#000",
   },
   passwordRow: {
     flexDirection: "row",

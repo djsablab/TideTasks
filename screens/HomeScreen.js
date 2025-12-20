@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -273,7 +272,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
 
   /* -------------------- Main UI -------------------- */
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { backgroundColor: isDarkMode ? "#16191dff" : "#ffffff" },
@@ -477,7 +476,7 @@ export default function HomeScreen({ isDarkMode, setShowNavBar }) {
           </TouchableOpacity>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

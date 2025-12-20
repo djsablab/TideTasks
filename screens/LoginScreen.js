@@ -1,6 +1,6 @@
 /* -------------------- Imports -------------------- */
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet } from "react-native";
+import { View, TextInput, Text, StyleSheet } from "react-native";
 import { auth } from "../firebase"; // Import Firebase auth from your firebase.js file
 import { signInWithEmailAndPassword } from "firebase/auth";
 import RoundedButton from "../components/RoundedButton";
@@ -38,13 +38,14 @@ const LoginScreen = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.container}>
-        <Text style={styles.header}>Login</Text>
+        <Text style={styles.header}>Login to TideTasks</Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          placeholderTextColor="#999"
         />
         <View style={styles.passwordRow}>
           <TextInput
@@ -59,6 +60,7 @@ const LoginScreen = ({ navigation }) => {
             secureTextEntry={!showPassword}
             autoCapitalize="none"
             returnKeyType="next"
+            placeholderTextColor="#999"
           />
           <TouchableOpacity
             activeOpacity={0.85}
@@ -82,7 +84,7 @@ const LoginScreen = ({ navigation }) => {
           style={styles.link}
           onPress={() => navigation.navigate("Register")} // Navigate to Register screen
         >
-          Don't have an account? Sign up
+          Don't have an account yet? Sign up today!
         </Text>
       </View>
       <ToastManager />
@@ -111,6 +113,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     marginBottom: 6,
+    color: "#000",
   },
   passwordRow: {
     flexDirection: "row",

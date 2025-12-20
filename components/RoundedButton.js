@@ -1,13 +1,13 @@
 /* -------------------- Imports -------------------- */
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text} from 'react-native';
 
 /* -------------------- Rounded Button Component -------------------- */
-export default function RoundedButton({ title, onPress, style, textStyle }) {
+export default function RoundedButton({ title, onPress, style, textStyle,actOpacity }) {
   return (
     <TouchableOpacity
-    activeOpacity={0.85}
+    activeOpacity={actOpacity ?? 0.85}
       style={[{
-        backgroundColor: '#6200EE',
+        backgroundColor: '#df2424ff',
         paddingVertical: 8,
         paddingHorizontal: 8,
         borderRadius: 50,
