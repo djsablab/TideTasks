@@ -25,7 +25,7 @@
 ```bash
   npm install
 ```
-4️⃣ Fourth, create a file called '.env' and put these values from your applications' firebase console:
+4️⃣ Fourth, create a file called '.env' inside of root folder and put these values from your applications' firebase console:
 ```txt
 FIREBASE_API_KEY= -YOUR API KEY-
 FIREBASE_AUTH_DOMAIN= -YOUR AUTH DOMAIN-
