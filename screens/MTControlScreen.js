@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
@@ -44,7 +43,7 @@ export default function AddTaskScreen({ isDarkMode }) {
 
   /* -------------------- UI -------------------- */
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { backgroundColor: isDarkMode ? "#16191d" : "#f6f6f6" },
@@ -58,6 +57,7 @@ export default function AddTaskScreen({ isDarkMode }) {
       <TextInput
         placeholder="Task name..."
         placeholderTextColor="#999"
+        underlineColorAndroid="#0000"
         style={[
           styles.input,
           {
@@ -74,6 +74,7 @@ export default function AddTaskScreen({ isDarkMode }) {
       <TouchableOpacity
         onPress={() => setShowStartPicker(true)}
         style={styles.dateBtn}
+        activeOpacity={0.8}
       >
         <Ionicons
           name="calendar"
@@ -101,6 +102,7 @@ export default function AddTaskScreen({ isDarkMode }) {
       <TouchableOpacity
         onPress={() => setShowEndPicker(true)}
         style={styles.dateBtn}
+        activeOpacity={0.8}
       >
         <Ionicons
           name="calendar"
@@ -134,7 +136,8 @@ export default function AddTaskScreen({ isDarkMode }) {
       >
         <Text style={styles.saveText}>Add Task</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+      <ToastManager style={{ marginBottom: 20 }} />
+    </View>
   );
 }
 

@@ -286,7 +286,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
       ]}
     >
       <Text
-        style={[styles.title, { color: isDarkMode ? "#eceff4" : "#2e3440" }]}
+        style={[styles.sectionTitle, { color: isDarkMode ? "#eceff4" : "#2e3440" }]}
       >
         Profile
       </Text>
@@ -603,7 +603,7 @@ export default function ProfileScreen({ toggleTheme, isDarkMode }) {
           </View>
         </View>
       </Modal>
-      <ToastManager />
+      <ToastManager style={{ marginBottom: 20 }} />
     </View>
   );
 }
@@ -742,5 +742,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     justifyContent: "center",
     fontSize: 14,
+  },
+    sectionTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 20,
+    textAlign: "center",
   },
 });
